@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nebbi — B2B Sales Pipeline</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+:root {
+  --depth:#0B4851; --ember:#D7694D; --breeze:#82CCD9;
+  --still:#E3D7CF; --fresh:#D0F6C0; --ink:#111;
+  --muted:#999; --border:#e8e4df; --bg:#F7F4F1; --white:#fff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+#topbar{position:sticky;top:0;z-index:100;background:var(--depth);display:flex;align-items:center;justify-content:space-between;padding:10px 36px;gap:12px}
+.brand{font-size:10px;font-weight:600;color:#fff;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+.actions{display:flex;gap:8px;align-items:center}
+.edit-badge{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:var(--ember);color:#fff;padding:3px 10px;border-radius:2px;display:none}
+.edit-badge.on{display:inline-block}
+.btn{font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;border-radius:2px;border:none;cursor:pointer;transition:opacity .15s}
+.btn:hover{opacity:.82}
+.btn-ghost{background:rgba(255,255,255,.1);color:#fff}
+.btn-save{background:var(--ember);color:#fff}
+
+/* HEADER -- white, bright, Breeze accent */
+header{background:var(--white);color:var(--depth);padding:48px 40px 40px;border-bottom:3px solid var(--breeze)}
+.header-eyebrow{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--breeze);margin-bottom:14px}
+header h1{font-size:clamp(24px,3.5vw,38px);font-weight:300;line-height:1.15;max-width:560px;margin-bottom:12px;letter-spacing:-.01em;color:var(--depth)}
+header h1 strong{font-weight:700}
+header p{font-size:13px;color:var(--muted);max-width:460px;line-height:1.7;font-weight:300}
+
+/* STAGE STRIP */
+.stages-strip{background:var(--depth);padding:0 40px 24px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.07)}
+.strip-item{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);padding:4px 11px;border-radius:2px;cursor:pointer;transition:background .15s,color .15s}
+.strip-item:hover{background:var(--ember);color:#fff}
+
+/* MAIN */
+main{max-width:1040px;margin:0 auto;padding:36px 24px 100px}
+
+/* SECTION LABEL */
+.section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin:32px 0 12px 2px;display:flex;align-items:center;gap:10px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* STAGE CARD */
+.stage{background:var(--white);border:1px solid var(--border);border-radius:4px;margin-bottom:6px;overflow:hidden;transition:box-shadow .2s}
+.stage:hover{box-shadow:0 2px 16px rgba(11,72,81,.06)}
+.stage-hd{display:flex;align-items:center;gap:14px;padding:14px 20px;cursor:pointer;user-select:none;background:#fff;transition:background .12s}
+.stage-hd:hover{background:#faf8f5}
+.num{width:26px;height:26px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.stage-meta{flex:1;min-width:0}
+.stage-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink)}
+.stage-sub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:300}
+.chevron{width:14px;height:14px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.stage.open .chevron{transform:rotate(180deg)}
+
+/* STAGE BODY */
+.stage-bd{display:none;border-top:1px solid var(--border);padding:22px 20px;gap:20px;background:#fdfcfb;grid-template-columns:repeat(4,1fr)}
+.stage.open .stage-bd{display:grid}
+@media(max-width:700px){.stage-bd{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.stage-bd{grid-template-columns:1fr}}
+.col-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}
+.col ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+.col ul li{font-size:12px;color:#444;line-height:1.55;padding-left:11px;position:relative}
+.col ul li::before{content:'';position:absolute;left:0;top:7px;width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.5}
+.col ul li strong{font-weight:600;color:var(--ink)}
+.sub-bullets{margin-top:4px;padding-left:10px;display:flex;flex-direction:column;gap:3px}
+.sub-bullets li{font-size:11px;color:var(--muted)}
+.sub-bullets li::before{top:6px;width:2px;height:2px}
+.col ul li a{color:var(--depth);text-decoration:underline;text-decoration-color:var(--breeze);text-underline-offset:2px}
+.col ul li a:hover{color:var(--ember)}
+
+/* STAGE COLORS */
+.s1 .num{background:#E1F5EE;color:#0F6E56} .s1 .col-label{color:#0F6E56}
+.s2 .num{background:#E6F1FB;color:#185FA5} .s2 .col-label{color:#185FA5}
+.s3 .num{background:#EEEDFE;color:#534AB7} .s3 .col-label{color:#534AB7}
+.s4 .num{background:#FAEEDA;color:#854F0B} .s4 .col-label{color:#854F0B}
+.s5 .num{background:#FAECE7;color:#993C1D} .s5 .col-label{color:#993C1D}
+.s6 .num{background:#EAF3DE;color:#3B6D11} .s6 .col-label{color:#3B6D11}
+.s7 .num{background:#FBEAF0;color:#993556} .s7 .col-label{color:#993556}
+
+/* EDIT MODE */
+body.editing [contenteditable]:hover{background:rgba(130,204,217,.1);cursor:text;border-radius:2px}
+body.editing [contenteditable]:focus{background:rgba(130,204,217,.15);outline:none;border-radius:2px;box-shadow:0 0 0 1.5px var(--breeze)}
+.add-item-btn{display:none;font-size:10px;color:var(--breeze);background:none;border:none;cursor:pointer;padding:4px 0 0 11px;font-family:inherit;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+body.editing .add-item-btn{display:block}
+
+/* LINK TOOLBAR */
+#ltbar{position:fixed;display:none;z-index:9999;background:var(--depth);border-radius:3px;padding:6px 8px;gap:6px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.22)}
+#ltbar.on{display:flex}
+#ltbar label{font-size:10px;color:rgba(255,255,255,.5);white-space:nowrap;text-transform:uppercase;letter-spacing:.08em}
+#linput{font-family:inherit;font-size:12px;padding:4px 8px;border-radius:2px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;width:200px;outline:none}
+#linput::placeholder{color:rgba(255,255,255,.3)}
+#lapply{font-family:inherit;font-size:10px;font-weight:700;padding:4px 10px;background:var(--ember);color:#fff;border:none;border-radius:2px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
+#lremove{font-family:inherit;font-size:10px;padding:4px 10px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);border:none;border-radius:2px;cursor:pointer}
+.edit-hint{text-align:center;font-size:11px;color:var(--muted);padding:20px 0 0;display:none;letter-spacing:.04em}
+body.editing .edit-hint{display:block}
+
+/* ASSETS SECTION */
+.resources-grid{display:flex;flex-direction:column;gap:6px}
+.res-group{background:var(--white);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.res-group-hd{display:flex;align-items:center;gap:14px;padding:13px 20px;cursor:pointer;user-select:none;background:#fff;transition:background .12s}
+.res-group-hd:hover{background:#faf8f5}
+.res-stage-num{width:26px;height:26px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.rs1 .res-stage-num{background:#E1F5EE;color:#0F6E56}
+.rs2 .res-stage-num{background:#E6F1FB;color:#185FA5}
+.rs3 .res-stage-num{background:#EEEDFE;color:#534AB7}
+.rs4 .res-stage-num{background:#FAEEDA;color:#854F0B}
+.rs5 .res-stage-num{background:#FAECE7;color:#993C1D}
+.rs6 .res-stage-num{background:#EAF3DE;color:#3B6D11}
+.rs7 .res-stage-num{background:#FBEAF0;color:#993556}
+.res-group-meta{flex:1}
+.res-stage-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink)}
+.res-stage-sub{font-size:11px;color:var(--muted);margin-top:1px;font-weight:300}
+.res-chevron{width:13px;height:13px;color:var(--muted);transition:transform .2s;flex-shrink:0}
+.res-group.open .res-chevron{transform:rotate(180deg)}
+.res-body{display:none;border-top:1px solid var(--border)}
+.res-group.open .res-body{display:block}
+
+/* RES ROW */
+.res-row{
+  border-bottom:1px solid var(--border);
+  display:grid;
+  grid-template-columns:40px 1fr auto;
+  align-items:start;
+  gap:12px;
+  padding:13px 20px;
+}
+.res-row:last-child{border-bottom:none}
+.res-row .res-info{min-width:0}
+.res-row .res-dropdown{grid-column:2}
+.res-type-tag{
+  flex-shrink:0;
+  font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 6px;border-radius:2px;
+  background:#f0ede9;color:#999;
+  white-space:nowrap;align-self:start;margin-top:2px;
+}
+.res-info{min-width:0}
+.res-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.res-desc{font-size:11px;color:var(--muted);line-height:1.55;font-weight:300}
+
+/* STATUS BUTTON -- right-aligned tag, same style as type tag */
+.res-status{
+  font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 7px;border-radius:2px;
+  cursor:pointer;user-select:none;white-space:nowrap;
+  transition:opacity .15s;border:none;outline:none;
+  align-self:start;flex-shrink:0;margin-top:2px;
+  font-family:inherit;
+}
+.res-status:hover{opacity:.7}
+.status-needed{background:#f0ede9;color:#bbb}
+.status-wip{background:rgba(130,204,217,.25);color:var(--depth)}
+.status-ready{background:#E1F5EE;color:#0F6E56}
+
+/* DROPDOWN */
+.res-dropdown{margin-top:6px}
+.res-dropdown summary{font-size:10px;font-weight:600;color:var(--breeze);cursor:pointer;list-style:none;text-transform:uppercase;letter-spacing:.06em}
+.res-dropdown summary::-webkit-details-marker{display:none}
+.res-dropdown summary::before{content:'+ '}
+details[open].res-dropdown summary::before{content:'- '}
+.res-dropdown-list{list-style:none;margin-top:6px;display:flex;flex-direction:column;gap:4px;padding-left:8px;border-left:2px solid var(--border)}
+.res-dropdown-list li{font-size:11px;color:var(--muted);line-height:1.5}
+.res-dropdown-list li::before{display:none}
+
+</style>
+</head>
+<body class="">
+
+<div id="topbar">
+  <span class="brand">Nebbi — B2B Pipeline</span>
+  <div class="actions">
+    <span class="edit-badge" id="ebadge">Editing</span>
+    <button class="btn btn-ghost" id="expbtn" onclick="toggleAll()">Collapse all</button>
+    <button class="btn btn-ghost" id="etbtn" onclick="toggleEdit()">Edit mode</button>
+    <button class="btn btn-save" onclick="saveFile()">Save changes</button>
+  </div>
+</div>
+
+<header>
+  <div class="header-eyebrow">Confidential &mdash; Internal Use Only</div>
+  <h1>Nebbi <strong>B2B Sales Pipeline</strong></h1>
+  <p>Seven stages from first touchpoint to active partnership. Click any stage to expand. Turn on Edit mode to update text, add links, or add bullets.</p>
+</header>
+
+<div class="stages-strip">
+  <div class="strip-item" onclick="jumpTo('st1')">1. Initial Outreach</div>
+  <div class="strip-item" onclick="jumpTo('st2')">2. Discovery Call</div>
+  <div class="strip-item" onclick="jumpTo('st3')">3. Post-Discovery Follow-Up</div>
+  <div class="strip-item" onclick="jumpTo('st4')">4. Pricing + Proposal</div>
+  <div class="strip-item" onclick="jumpTo('st5')">5. Negotiation + Alignment</div>
+  <div class="strip-item" onclick="jumpTo('st6')">6. Contract</div>
+  <div class="strip-item" onclick="jumpTo('st7')">7. Onboarding</div>
+</div>
+
+<div id="ltbar" class="" style="left: 928.996px; top: 4788.22px;">
+  <label>Link</label>
+  <input type="text" id="linput" placeholder="https://">
+  <button id="lapply" onclick="applyLink()">Add</button>
+  <button id="lremove" onclick="removeLink()">Remove</button>
+</div>
+
+<main>
+
+<!-- ── STAGE 1 ─────────────────────────────────── -->
+<div class="stage s1 open" id="st1">
+  <div class="stage-hd" onclick="tog('st1')">
+    <div class="num">1</div>
+    <div class="stage-meta">
+      <div class="stage-title" contenteditable="false" data-wasedit="1">Initial outreach</div>
+      <div class="stage-sub" contenteditable="false" data-wasedit="1">Intro email, warm intro, or inbound inquiry</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+  <div class="stage-bd">
+    <div class="col">
+      <div class="col-label">Goal</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Introduce Nebbi in a simple, approachable way</li>
+        <li contenteditable="false" data-wasedit="1">Establish relevance and interest</li>
+        <li contenteditable="false" data-wasedit="1">Gauge whether there is a potential fit worth exploring</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Deliverables sent</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1"><strong>Short "Who is Nebbi?" overview</strong></li>
+        <li contenteditable="false" data-wasedit="1">What Nebbi does, who it serves, key outcomes</li>
+        <li contenteditable="false" data-wasedit="1">Call scheduling link or suggested meeting times</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Communication</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Intro email (sector-specific)</li>
+        <li contenteditable="false" data-wasedit="1">Follow-up email 5 days later if no reply</li>
+        <li contenteditable="false" data-wasedit="1">Final follow-up 7 days after that</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">We walk away knowing</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Is there enough interest to continue?</li>
+        <li contenteditable="false" data-wasedit="1">What type of company or org are they?</li>
+        <li contenteditable="false" data-wasedit="1">Who is leading the conversation internally?</li>
+        <li contenteditable="false" data-wasedit="1">Are they actively looking or just exploring?</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── STAGE 2 ─────────────────────────────────── -->
+<div class="stage s2 open" id="st2">
+  <div class="stage-hd" onclick="tog('st2')">
+    <div class="num">2</div>
+    <div class="stage-meta">
+      <div class="stage-title" contenteditable="false" data-wasedit="1">Discovery call</div>
+      <div class="stage-sub" contenteditable="false" data-wasedit="1">Learn their world before pitching ours</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+  <div class="stage-bd">
+    <div class="col">
+      <div class="col-label">Goal</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Learn what the company is trying to achieve</li>
+        <li contenteditable="false" data-wasedit="1">Understand pain points, employee goals, and current wellness structure</li>
+        <li contenteditable="false" data-wasedit="1">Begin identifying potential use cases and internal champions</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Deliverables sent</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1"><strong>Live overview and demo of Nebbi</strong></li>
+        <li contenteditable="false" data-wasedit="1"><strong>Partnership deck (sector-specific)</strong></li>
+        <li contenteditable="false" data-wasedit="1"><strong>1-week free Nebbi trial access</strong></li>
+        <li contenteditable="false" data-wasedit="1">Strategic brainstorm around possible implementation</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Topics to cover</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Employee engagement goals</li>
+        <li contenteditable="false" data-wasedit="1">Retention, culture initiative,&nbsp;</li>
+        <li contenteditable="false" data-wasedit="1">Existing wellness offerings</li>
+        <li contenteditable="false" data-wasedit="1">Budget structure and decision-making process</li>
+        <li contenteditable="false" data-wasedit="1">Timeline for rollout</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">We walk away knowing</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Does Nebbi genuinely fit their needs?</li>
+        <li contenteditable="false" data-wasedit="1">What "bucket" do they fall into?</li>
+        <li contenteditable="false" data-wasedit="1">Who are the key decision makers?</li>
+        <li contenteditable="false" data-wasedit="1">Where would budget come from?</li>
+        <li contenteditable="false" data-wasedit="1">What would success look like for them?</li>
+      <li contenteditable="false" data-wasedit="1">What is their employee size?&nbsp;</li><li contenteditable="false" data-wasedit="1">Would initial on-boarding be full scale?</li></ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── STAGE 3 ─────────────────────────────────── -->
+<div class="stage s3 open" id="st3">
+  <div class="stage-hd" onclick="tog('st3')">
+    <div class="num">3</div>
+    <div class="stage-meta">
+      <div class="stage-title" contenteditable="false" data-wasedit="1">Post-discovery follow-up</div>
+      <div class="stage-sub" contenteditable="false" data-wasedit="1">Recap, position, and build momentum</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+  <div class="stage-bd">
+    <div class="col">
+      <div class="col-label">Goal</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Recap what was discussed</li>
+        <li contenteditable="false" data-wasedit="1">Position Nebbi as a strategic solution</li>
+        <li contenteditable="false" data-wasedit="1">Build confidence and momentum toward proposal</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Deliverables sent</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1"><strong>Nebbi implementation recommendation</strong>
+          <ul class="sub-bullets">
+            <li contenteditable="false" data-wasedit="1">Suggested service structure and rollout timeline</li>
+            <li contenteditable="false" data-wasedit="1">Goals and success metrics</li>
+          </ul>
+        </li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Communication</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Follow-up email with recap and recommendation outline</li>
+        <li contenteditable="false" data-wasedit="1">Optional strategy call to align on direction</li>
+        <li contenteditable="false" data-wasedit="1"><br></li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">We walk away knowing</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Internal alignment on their side</li>
+        <li contenteditable="false" data-wasedit="1">Clarity around interest level and urgency</li>
+        <li contenteditable="false" data-wasedit="1">Buy-in from additional stakeholders</li>
+        <li contenteditable="false" data-wasedit="1">Understanding of timing and next decision gate</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── STAGE 4 ─────────────────────────────────── -->
+<div class="stage s4 open" id="st4">
+  <div class="stage-hd" onclick="tog('st4')">
+    <div class="num">4</div>
+    <div class="stage-meta">
+      <div class="stage-title" contenteditable="false" data-wasedit="1">Pricing + proposal call</div>
+      <div class="stage-sub" contenteditable="false" data-wasedit="1">Present investment clearly, tied to outcomes</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+  <div class="stage-bd">
+    <div class="col">
+      <div class="col-label">Goal</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Walk through pricing clearly and confidently</li>
+        <li contenteditable="false" data-wasedit="1">Explain partnership structure and expectations</li>
+        <li contenteditable="false" data-wasedit="1">Tie pricing back to outcomes and value</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Deliverables sent</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1"><strong>Pricing proposal and package recommendation</strong>
+          <ul class="sub-bullets">
+            <li contenteditable="false" data-wasedit="1">Timeline overview</li>
+          </ul>
+        </li>
+        <li contenteditable="false" data-wasedit="1">Optional tiers and add-ons if applicable</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Topics to cover</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Pricing Option</li>
+        <li contenteditable="false" data-wasedit="1">User counts and team size</li>
+        <li contenteditable="false" data-wasedit="1">Pilot vs. full launch options</li>
+        <li contenteditable="false" data-wasedit="1">Support level and contract structure</li>
+        <li contenteditable="false" data-wasedit="1">High Level Contract nods</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">We walk away knowing</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Budget confirmation</li>
+        <li contenteditable="false" data-wasedit="1">Timeline confirmation</li>
+        <li contenteditable="false" data-wasedit="1">Remaining objections or questions</li>
+        <li contenteditable="false" data-wasedit="1">Clear next steps and who owns them</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── STAGE 5 ─────────────────────────────────── -->
+<div class="stage s5 open" id="st5">
+  <div class="stage-hd" onclick="tog('st5')">
+    <div class="num">5</div>
+    <div class="stage-meta">
+      <div class="stage-title" contenteditable="false" data-wasedit="1">Negotiation + final alignment</div>
+      <div class="stage-sub" contenteditable="false" data-wasedit="1">Remove friction, reach green light</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+  <div class="stage-bd">
+    <div class="col">
+      <div class="col-label">Goal</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Finalize scope and terms</li>
+        <li contenteditable="false" data-wasedit="1">Remove friction from closing</li>
+        <li contenteditable="false" data-wasedit="1">Ensure both sides feel aligned</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Deliverables sent</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1"><strong>Revised proposal if needed</strong>
+          <ul class="sub-bullets">
+            <li contenteditable="false" data-wasedit="1">Final pricing and timeline confirmation</li>
+          </ul>
+        </li>
+        <li contenteditable="false" data-wasedit="1">Clarified terms in writing</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Communication</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Call to resolve remaining objections</li>
+        <li contenteditable="false" data-wasedit="1">Follow-up email confirming verbal agreement</li>
+        <li contenteditable="false" data-wasedit="1">Confirm all final decision makers are aligned</li>
+      <li contenteditable="false" data-wasedit="1">Hint at on-boarding logistics and needs</li></ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">We walk away knowing</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Verbal agreement secured</li>
+        <li contenteditable="false" data-wasedit="1">All final decision makers aligned</li>
+        <li contenteditable="false" data-wasedit="1">Green light to move to contract</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── STAGE 6 ─────────────────────────────────── -->
+<div class="stage s6 open" id="st6">
+  <div class="stage-hd" onclick="tog('st6')">
+    <div class="num">6</div>
+    <div class="stage-meta">
+      <div class="stage-title" contenteditable="false" data-wasedit="1">Contract</div>
+      <div class="stage-sub" contenteditable="false" data-wasedit="1">Close it cleanly, prepare them for onboarding</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+  <div class="stage-bd">
+    <div class="col">
+      <div class="col-label">Goal</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Officially secure the partnership</li>
+        <li contenteditable="false" data-wasedit="1">Keep momentum high</li>
+        <li contenteditable="false" data-wasedit="1">Prepare them internally for onboarding</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Deliverables sent</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1"><strong>Contract</strong></li>
+        <li contenteditable="false" data-wasedit="1"><strong>Initial onboarding checklist preview</strong></li>
+        <li contenteditable="false" data-wasedit="1"><strong>Materials request list</strong></li>
+        <li contenteditable="false" data-wasedit="1"><strong>Invoice issued</strong></li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Internal materials they need ready</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Employee count</li>
+        <li contenteditable="false" data-wasedit="1">Team and admin contacts</li>
+        <li contenteditable="false" data-wasedit="1">Branding assets if applicable</li>
+        <li contenteditable="false" data-wasedit="1">Internal communications contacts</li>
+        <li contenteditable="false" data-wasedit="1">Rollout dates</li>
+        <li contenteditable="false" data-wasedit="1">Wellness or benefits documentation</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">We walk away with</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Signed agreement</li>
+        <li contenteditable="false" data-wasedit="1">Confirmed kickoff timeline</li>
+        <li contenteditable="false" data-wasedit="1">Primary point of contact established</li>
+        <li contenteditable="false" data-wasedit="1">Relationship handed to onboarding track</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── STAGE 7 ─────────────────────────────────── -->
+<div class="stage s7 open" id="st7">
+  <div class="stage-hd" onclick="tog('st7')">
+    <div class="num">7</div>
+    <div class="stage-meta">
+      <div class="stage-title" contenteditable="false" data-wasedit="1">Onboarding</div>
+      <div class="stage-sub" contenteditable="false" data-wasedit="1">High-touch launch, set them up to succeed</div>
+    </div>
+    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+  </div>
+  <div class="stage-bd">
+    <div class="col">
+      <div class="col-label">Goal</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Create a smooth, high-touch onboarding experience</li>
+        <li contenteditable="false" data-wasedit="1">Make implementation feel easy and organized</li>
+        <li contenteditable="false" data-wasedit="1">Build excitement internally</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Deliverables sent</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1"><strong>Onboarding steps PDF</strong></li>
+        <li contenteditable="false" data-wasedit="1"><strong>Admin dashboard credentials</strong></li>
+        <li contenteditable="false" data-wasedit="1"><strong>Portal walkthrough call</strong></li>
+        <li contenteditable="false" data-wasedit="1"><strong>Launch checklist</strong></li>
+        <li contenteditable="false" data-wasedit="1">Communication templates if applicable</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">Onboarding call includes</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Portal walkthrough (15 min)</li>
+        <li contenteditable="false" data-wasedit="1">Admin setup</li>
+        <li contenteditable="false" data-wasedit="1">User experience overview</li>
+        <li contenteditable="false" data-wasedit="1">Launch strategy discussion</li>
+        <li contenteditable="false" data-wasedit="1">Set mid-program check-in date now</li>
+        <li contenteditable="false" data-wasedit="1">Q&amp;A</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+    <div class="col">
+      <div class="col-label">We walk away with</div>
+      <ul>
+        <li contenteditable="false" data-wasedit="1">Fully prepared client</li>
+        <li contenteditable="false" data-wasedit="1">Internal launch readiness confirmed</li>
+        <li contenteditable="false" data-wasedit="1">Confirmed implementation timeline</li>
+        <li contenteditable="false" data-wasedit="1">Activation target: 50%+ within 7 days</li>
+        <li contenteditable="false" data-wasedit="1">Strong relationship and confidence moving forward</li>
+      </ul>
+      <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
+    </div>
+  </div>
+</div>
+
+<div class="edit-hint">Click any text to edit &nbsp;•&nbsp; Select text and use the toolbar to add a link &nbsp;•&nbsp; Click "+ add item" to add a bullet</div>
+
+<!-- ── RESOURCES ───────────────────────────────── -->
+<div class="section-label" style="margin-top:28px;">Assets needed</div>
+<p style="font-size:12px;color:var(--muted);margin-bottom:14px;padding-left:4px;">Every deliverable required to run this pipeline, organized by stage. Update status as assets are built.</p>
+
+<div class="resources-grid">
+
+  <div class="res-group rs1 open">
+    <div class="res-group-hd" onclick="togRes(this)">
+      <div class="res-stage-num">1</div>
+      <div class="res-group-meta">
+        <div class="res-stage-label">Initial outreach</div>
+        <div class="res-stage-sub">What needs to exist before the first email goes out</div>
+      </div>
+      <svg class="res-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="res-body">
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">"Who is Nebbi?" one-pager</div>
+          <div class="res-desc" contenteditable="false">Short, scannable intro. What Nebbi does, who it serves, key outcomes. No prior context required. Sent with the first email.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="res-group rs2 open">
+    <div class="res-group-hd" onclick="togRes(this)">
+      <div class="res-stage-num">2</div>
+      <div class="res-group-meta">
+        <div class="res-stage-label">Discovery call</div>
+        <div class="res-stage-sub">Materials to send before or immediately after the call</div>
+      </div>
+      <svg class="res-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="res-body">
+      <div class="res-row">
+        <span class="res-type-tag">DECK</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Partnership deck</div>
+          <div class="res-desc" contenteditable="false">Sector-specific version sent based on what you learned in Stage 1.</div>
+          <details class="res-dropdown">
+            <summary>View versions</summary>
+            <ul class="res-dropdown-list">
+              <li contenteditable="false">General -- sector-agnostic overview for warm intros or unknown sectors</li>
+              <li contenteditable="false">Athletics -- Big Ten and collegiate athletics, triangulation frame and per-athlete pricing</li>
+              <li contenteditable="false">Corporate / HR -- workplace wellness, leads with culture, retention, and burnout framing</li>
+              <li contenteditable="false">Academic -- graduate and professional education version</li>
+            </ul>
+          </details>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">1-week free Nebbi trial access</div>
+          <div class="res-desc" contenteditable="false">Trial invitation sent after the discovery call. Frictionless to activate -- no setup required from the partner side.</div>
+        </div>
+        <div class="res-status status-wip" data-cycle="1">In progress</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="res-group rs3 open">
+    <div class="res-group-hd" onclick="togRes(this)">
+      <div class="res-stage-num">3</div>
+      <div class="res-group-meta">
+        <div class="res-stage-label">Post-discovery follow-up</div>
+        <div class="res-stage-sub">Custom docs built from what you heard on the call</div>
+      </div>
+      <svg class="res-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="res-body">
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Nebbi implementation recommendation</div>
+          <div class="res-desc" contenteditable="false">Built per partner after discovery. Reflects their population, goals, and bucket. Includes suggested service structure, rollout timeline, and success metrics.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="res-group rs4 open">
+    <div class="res-group-hd" onclick="togRes(this)">
+      <div class="res-stage-num">4</div>
+      <div class="res-group-meta">
+        <div class="res-stage-label">Pricing + proposal call</div>
+        <div class="res-stage-sub">Formal proposal materials sent before or after the pricing call</div>
+      </div>
+      <svg class="res-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="res-body">
+      <div class="res-row">
+        <span class="res-type-tag">PDF</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Pricing proposal and package recommendation</div>
+          <div class="res-desc" contenteditable="false">Customizable per partner. Includes flat annual fee, tier, timeline overview, and ROI framing vs. therapy cost.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="res-group rs5 open">
+    <div class="res-group-hd" onclick="togRes(this)">
+      <div class="res-stage-num">5</div>
+      <div class="res-group-meta">
+        <div class="res-stage-label">Negotiation + final alignment</div>
+        <div class="res-stage-sub">Closing materials -- revised only if needed</div>
+      </div>
+      <svg class="res-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="res-body">
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Revised proposal (if needed)</div>
+          <div class="res-desc" contenteditable="false">Updated version of the Stage 4 proposal reflecting any scope or pricing changes agreed during negotiation.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="res-group rs6 open">
+    <div class="res-group-hd" onclick="togRes(this)">
+      <div class="res-stage-num">6</div>
+      <div class="res-group-meta">
+        <div class="res-stage-label">Contract</div>
+        <div class="res-stage-sub">Legal and pre-onboarding materials sent at signing</div>
+      </div>
+      <svg class="res-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="res-body">
+      <div class="res-row">
+        <span class="res-type-tag">PDF</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Contract</div>
+          <div class="res-desc" contenteditable="false">Master service agreement. Annual term, cohort size, deliverables, payment terms, data privacy, and renewal structure.</div>
+        </div>
+        <div class="res-status status-wip" data-cycle="1">In progress</div>
+      </div>
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Initial onboarding checklist preview</div>
+          <div class="res-desc" contenteditable="false">Soft preview of what the partner needs to gather: employee count, admin contacts, onboarding method, rollout dates, branding assets.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Materials request list</div>
+          <div class="res-desc" contenteditable="false">Formal confirmation of what Nebbi needs from the partner before onboarding begins.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Invoice issued</div>
+          <div class="res-desc" contenteditable="false">Standard Nebbi invoice sent at contract signing. Confirms annual fee, payment terms, and program start date.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="res-group rs7 open">
+    <div class="res-group-hd" onclick="togRes(this)">
+      <div class="res-stage-num">7</div>
+      <div class="res-group-meta">
+        <div class="res-stage-label">Onboarding</div>
+        <div class="res-stage-sub">Everything needed to launch the program on day one</div>
+      </div>
+      <svg class="res-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="res-body">
+      <div class="res-row">
+        <span class="res-type-tag">PDF</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Onboarding steps PDF</div>
+          <div class="res-desc" contenteditable="false">Step-by-step guide for the partner admin. Dashboard access, participant invitation, first two weeks, and Nebbi contact info.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Admin dashboard credentials</div>
+          <div class="res-desc" contenteditable="false">Login and access details for the partner admin. Delivered at contract signing, live from day one.</div>
+        </div>
+        <div class="res-status status-wip" data-cycle="1">In progress</div>
+      </div>
+      <div class="res-row">
+        <span class="res-type-tag">CALL</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Portal walkthrough call</div>
+          <div class="res-desc" contenteditable="false">60-minute kickoff session. Portal overview, admin setup, launch strategy, Q&amp;A. Schedule at contract signing -- not after.</div>
+        </div>
+        <div class="res-status status-wip" data-cycle="1">In progress</div>
+      </div>
+      <div class="res-row">
+        <span class="res-type-tag">DOC</span>
+        <div class="res-info">
+          <div class="res-title" contenteditable="false">Launch checklist</div>
+          <div class="res-desc" contenteditable="false">Step-by-step checklist for the partner to confirm launch readiness. Covers invitations sent, admin setup complete, and activation tracking live.</div>
+        </div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</main>
+
+<script>
+var allOpen = false;
+function tog(id) { document.getElementById(id).classList.toggle('open'); }
+function toggleAll() {
+  allOpen = !allOpen;
+  document.querySelectorAll('.stage').forEach(function(s){ s.classList.toggle('open', allOpen); });
+  document.getElementById('expbtn').textContent = allOpen ? 'Collapse all' : 'Expand all';
+}
+function jumpTo(id) {
+  var el = document.getElementById(id);
+  el.classList.add('open');
+  setTimeout(function(){ el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+}
+
+var editing = false;
+function toggleEdit() {
+  editing = !editing;
+  document.body.classList.toggle('editing', editing);
+  document.getElementById('ebadge').classList.toggle('on', editing);
+  document.getElementById('etbtn').textContent = editing ? 'Done editing' : 'Edit mode';
+  document.querySelectorAll('[contenteditable]').forEach(function(el){
+    el.contentEditable = editing ? 'true' : 'false';
+  });
+  if (!editing) hideTB();
+}
+
+function addItem(btn) {
+  var ul = btn.previousElementSibling;
+  while (ul && ul.tagName !== 'UL') ul = ul.previousElementSibling;
+  if (!ul) return;
+  var li = document.createElement('li');
+  li.contentEditable = 'true';
+  li.textContent = 'New item';
+  ul.appendChild(li);
+  var range = document.createRange();
+  range.selectNodeContents(li);
+  var sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(range);
+  li.focus();
+}
+
+var tb = document.getElementById('ltbar');
+var linput = document.getElementById('linput');
+var savedRange = null;
+
+document.addEventListener('mouseup', function(e) {
+  if (!editing) return;
+  if (tb.contains(e.target)) return;
+  setTimeout(function() {
+    var sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.toString().trim()) { hideTB(); return; }
+    var r = sel.getRangeAt(0);
+    var rect = r.getBoundingClientRect();
+    savedRange = r.cloneRange();
+    tb.style.left = Math.max(8, rect.left + window.scrollX + rect.width/2 - 170) + 'px';
+    tb.style.top  = Math.max(8, rect.top + window.scrollY - 54) + 'px';
+    tb.classList.add('on');
+    var ex = getLink(sel);
+    linput.value = ex ? ex.href : '';
+    linput.focus();
+  }, 10);
+});
+document.addEventListener('mousedown', function(e){ if (!tb.contains(e.target)) hideTB(); });
+
+function hideTB() { tb.classList.remove('on'); savedRange = null; }
+function getLink(sel) {
+  if (!sel.rangeCount) return null;
+  var n = sel.getRangeAt(0).commonAncestorContainer;
+  while (n && n.nodeName !== 'A') n = n.parentNode;
+  return (n && n.nodeName === 'A') ? n : null;
+}
+function applyLink() {
+  var url = linput.value.trim();
+  if (!url || !savedRange) return;
+  if (!url.startsWith('http') && !url.startsWith('mailto:')) url = 'https://' + url;
+  var sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(savedRange);
+  var ex = getLink(sel);
+  if (ex) { ex.href = url; }
+  else {
+    var a = document.createElement('a');
+    a.href = url; a.target = '_blank';
+    try { savedRange.surroundContents(a); }
+    catch(e) { document.execCommand('createLink', false, url); }
+  }
+  hideTB();
+}
+function removeLink() {
+  if (!savedRange) return;
+  var sel = window.getSelection();
+  sel.removeAllRanges(); sel.addRange(savedRange);
+  document.execCommand('unlink', false, null);
+  hideTB();
+}
+linput.addEventListener('keydown', function(e){
+  if (e.key === 'Enter') { e.preventDefault(); applyLink(); }
+  if (e.key === 'Escape') hideTB();
+});
+
+/* ── STATUS PILL CYCLING ─────────────────────── */
+var statusCycle = [
+  { cls: 'status-needed', label: 'Not started' },
+  { cls: 'status-wip',    label: 'In progress' },
+  { cls: 'status-ready',  label: 'Ready'        }
+];
+document.addEventListener('click', function(e) {
+  var pill = e.target.closest('[data-cycle]');
+  if (!pill) return;
+  var cur = statusCycle.findIndex(function(s){ return pill.classList.contains(s.cls); });
+  var nxt = statusCycle[(cur + 1) % statusCycle.length];
+  statusCycle.forEach(function(s){ pill.classList.remove(s.cls); });
+  pill.classList.add(nxt.cls);
+  pill.textContent = nxt.label;
+});
+/* ── ASSET GROUP TOGGLE ──────────────────────── */
+function togRes(hd) { hd.parentElement.classList.toggle('open'); }
+
+function saveFile() {
+  document.querySelectorAll('[contenteditable="true"]').forEach(function(el){
+    el.setAttribute('data-wasedit','1');
+    el.contentEditable = 'false';
+  });
+  var wasEditing = editing;
+  editing = false;
+  document.body.classList.remove('editing');
+  document.getElementById('ebadge').classList.remove('on');
+  document.getElementById('etbtn').textContent = 'Edit mode';
+
+  var html = '<!DOCTYPE html>\n<html lang="en">\n' + document.documentElement.innerHTML + '\n</html>';
+
+  document.querySelectorAll('[data-wasedit]').forEach(function(el){
+    el.removeAttribute('data-wasedit');
+  });
+  if (wasEditing) {
+    editing = true;
+    document.body.classList.add('editing');
+    document.getElementById('ebadge').classList.add('on');
+    document.getElementById('etbtn').textContent = 'Done editing';
+    document.querySelectorAll('[contenteditable]').forEach(function(el){
+      el.contentEditable = 'true';
+    });
+  }
+
+  var blob = new Blob([html], { type: 'text/html' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'nebbi_b2b_pipeline.html';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+</script>
+
+
+</body>
+</html>
