@@ -196,7 +196,7 @@ details[open].res-dropdown summary::before{content:'- '}
   <div class="strip-item" onclick="jumpTo('st7')">7. Onboarding</div>
 </div>
 
-<div id="ltbar" class="" style="left: 928.996px; top: 4788.22px;">
+<div id="ltbar" class="" style="left: 202.648px; top: 3567.14px;">
   <label>Link</label>
   <input type="text" id="linput" placeholder="https://">
   <button id="lapply" onclick="applyLink()">Add</button>
@@ -499,7 +499,7 @@ details[open].res-dropdown summary::before{content:'- '}
       <ul>
         <li contenteditable="false"><strong>Contract</strong></li>
         <li contenteditable="false"><strong>Initial onboarding checklist preview</strong></li>
-        <li contenteditable="false"><strong>Materials request list</strong></li>
+        <li contenteditable="false"><font color="#111111"><b>Reciprocal Marketing Expectations</b></font></li>
         <li contenteditable="false"><strong>Invoice issued</strong></li>
       </ul>
       <button class="add-item-btn" onclick="addItem(this)">+ add item</button>
@@ -610,7 +610,7 @@ details[open].res-dropdown summary::before{content:'- '}
           <div class="res-title" contenteditable="false">"Who is Nebbi?" one-pager</div>
           <div class="res-desc" contenteditable="false">Short, scannable intro. What Nebbi does, who it serves, key outcomes. No prior context required. Sent with the first email.</div>
         </div>
-        <div class="res-status status-needed" data-cycle="1">Not started</div>
+        <div class="res-status status-ready" data-cycle="1">Ready</div>
       </div>
     </div>
   </div>
@@ -640,7 +640,7 @@ details[open].res-dropdown summary::before{content:'- '}
             </ul>
           </details>
         </div>
-        <div class="res-status status-needed" data-cycle="1">Not started</div>
+        <div class="res-status status-ready" data-cycle="1">Ready</div>
       </div>
       <div class="res-row">
         <span class="res-type-tag">DOC</span>
@@ -690,7 +690,7 @@ details[open].res-dropdown summary::before{content:'- '}
           <div class="res-title" contenteditable="false">Pricing proposal and package recommendation</div>
           <div class="res-desc" contenteditable="false">Customizable per partner. Includes flat annual fee, tier, timeline overview, and ROI framing vs. therapy cost.</div>
         </div>
-        <div class="res-status status-needed" data-cycle="1">Not started</div>
+        <div class="res-status status-wip" data-cycle="1">In progress</div>
       </div>
     </div>
   </div>
@@ -732,7 +732,7 @@ details[open].res-dropdown summary::before{content:'- '}
           <div class="res-title" contenteditable="false">Contract</div>
           <div class="res-desc" contenteditable="false">Master service agreement. Annual term, cohort size, deliverables, payment terms, data privacy, and renewal structure.</div>
         </div>
-        <div class="res-status status-wip" data-cycle="1">In progress</div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
       </div>
       <div class="res-row">
         <span class="res-type-tag">DOC</span>
@@ -745,8 +745,8 @@ details[open].res-dropdown summary::before{content:'- '}
       <div class="res-row">
         <span class="res-type-tag">DOC</span>
         <div class="res-info">
-          <div class="res-title" contenteditable="false">Materials request list</div>
-          <div class="res-desc" contenteditable="false">Formal confirmation of what Nebbi needs from the partner before onboarding begins.</div>
+          <div class="res-title" contenteditable="false">Reciprocal Marketing Strategy and Assets</div>
+          <div class="res-desc" contenteditable="false">What the branding strategy and combined partnership looks like from a Marketing Perspective</div>
         </div>
         <div class="res-status status-needed" data-cycle="1">Not started</div>
       </div>
@@ -785,7 +785,7 @@ details[open].res-dropdown summary::before{content:'- '}
           <div class="res-title" contenteditable="false">Admin dashboard credentials</div>
           <div class="res-desc" contenteditable="false">Login and access details for the partner admin. Delivered at contract signing, live from day one.</div>
         </div>
-        <div class="res-status status-wip" data-cycle="1">In progress</div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
       </div>
       <div class="res-row">
         <span class="res-type-tag">CALL</span>
@@ -793,13 +793,13 @@ details[open].res-dropdown summary::before{content:'- '}
           <div class="res-title" contenteditable="false">Portal walkthrough call</div>
           <div class="res-desc" contenteditable="false">60-minute kickoff session. Portal overview, admin setup, launch strategy, Q&amp;A. Schedule at contract signing -- not after.</div>
         </div>
-        <div class="res-status status-wip" data-cycle="1">In progress</div>
+        <div class="res-status status-needed" data-cycle="1">Not started</div>
       </div>
       <div class="res-row">
         <span class="res-type-tag">DOC</span>
         <div class="res-info">
-          <div class="res-title" contenteditable="false">Launch checklist</div>
-          <div class="res-desc" contenteditable="false">Step-by-step checklist for the partner to confirm launch readiness. Covers invitations sent, admin setup complete, and activation tracking live.</div>
+          <div class="res-title" contenteditable="false">Partnership Support Expectations</div>
+          <div class="res-desc" contenteditable="false">The outline of communication and on-site support to encourage retention.&nbsp;</div>
         </div>
         <div class="res-status status-needed" data-cycle="1">Not started</div>
       </div>
@@ -962,6 +962,9 @@ function saveFile() {
   URL.revokeObjectURL(a.href);
 }
 </script>
+
+
+
 
 
 
